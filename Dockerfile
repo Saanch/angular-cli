@@ -1,20 +1,12 @@
-FROM node:8.5-alpine
+FROM node:9.2.0-alpine
 
-# install angular-cli as node user
-RUN chown -R node:node /usr/local/lib/node_modules \
-  && chown -R node:node /usr/local/bin
-
-RUN apk update
-RUN apk add yarn
-
-USER node
-RUN yarn global add @angular/cli@1.4.2
-
-# set npm as default package manager for root
-USER root
-RUN ng set --global packageManager=yarn
-
-# install chromium for headless browser tests
-ENV CHROME_BIN=/usr/bin/chromium-browser
-RUN apk add --no-cache chromium udev ttf-freefont
-RUN apk add --no-cache bash git
+RUN apk update \
+  && apk add --update alpine-sdk python \
+  && apk add --no-cache bash git \
+  && yarn global add @angular/cli@1.5.5 \
+  && ng set --global packageManager=yarn \
+  && apk del alpine-sdk python \
+  && rm -rf /tmp/* /var/cache/apk/* *.tar.gz ~/.npm \
+  && npm cache clean --force \
+  && yarn cache clean \
+  && sed -i -e "s/bin\/ash/bin\/sh/" /etc/passwd
